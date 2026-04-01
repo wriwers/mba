@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>MBA / VC / Инвестиции — тренажёр</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; max-width: 960px; }
+    h1, h2, h3 { margin-bottom: 0.3em; }
+    p { line-height: 1.5; }
+    .small { font-size: 0.9em; color: #555; }
+    .card { border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+    .header { margin-bottom: 16px; }
+    .level-select { margin-bottom: 12px; }
+    select, input[type="number"], input[type="range"] { padding: 4px 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.95em; }
+    .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #333; background: #fff; cursor: pointer; margin-right: 8px; margin-top: 8px; font-size: 0.95em; }
+    .btn-primary { background: #111; color: #fff; }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+    .options { margin-top: 8px; }
+    .option { margin-bottom: 4px; }
+    .result { margin-top: 8px; font-weight: 600; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+    .progress { margin-top: 4px; font-size: 0.85em; color: #666; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; background: #eee; font-size: 0.8em; margin-left: 6px; }
+    .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+    .flex-col { flex: 1 1 160px; min-width: 140px; }
+    label { font-size: 0.9em; }
+    hr { border: none; border-top: 1px dashed #ddd; margin: 10px 0; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #f3f3f3; font-size: 0.8em; margin-right: 4px; margin-top: 2px; }
+    .section-title { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>MBA / VC / Инвестиции — мини‑тренажёр</h1>
+  <p class="small">
+    Теория простым языком + вопросы и кейсы по ключевым блокам MBA: финансы, экономика, стратегия, венчур, unit‑экономика, риск и возврат.[web:11][web:12][web:13][web:15][web:16][web:17][web:19][web:20]
+  </p>
+</div>
+
+<div class="card level-select">
+  <label for="level">Уровень / блок курса:</label>
+  <select id="level">
+    <option value="1">1 — Базовая экономика и бизнес</option>
+    <option value="2">2 — Финансы и инвестиции</option>
+    <option value="3">3 — Венчур и стартапы</option>
+    <option value="4">4 — Стратегия и unit‑экономика</option>
+  </select>
+  <button class="btn" onclick="prevLevel()">←</button>
+  <button class="btn" onclick="nextLevel()">→</button>
+  <span class="badge" id="level-label"></span>
+</div>
+
+<div class="card" id="theory-card">
+  <div class="section-title">
+    <h2>Теория</h2>
+    <span class="small" id="topic-meta"></span>
+  </div>
+  <h3 id="topic-title"></h3>
+  <p id="topic-text"></p>
+  <p class="small" id="topic-source"></p>
+  <div>
+    <button class="btn" onclick="prevTopic()">Предыдущая тема</button>
+    <button class="btn" onclick="nextTopic()">Следующая тема</button>
+    <span class="progress" id="topic-progress"></span>
+  </div>
+</div>
+
+<div class="card" id="quiz-card">
+  <div class="section-title">
+    <h2>Quiz‑вопрос</h2>
+    <span class="small" id="quiz-meta"></span>
+  </div>
+  <div class="progress" id="quiz-progress"></div>
+  <h3 id="quiz-question"></h3>
+  <div class="options" id="quiz-options"></div>
+  <button class="btn btn-primary" onclick="checkAnswer()">Проверить</button>
+  <button class="btn" onclick="nextQuestion()">Следующий вопрос</button>
+  <div class="result" id="quiz-result"></div>
+  <p class="small" id="quiz-explanation"></p>
+</div>
+
+<div class="card" id="scenario-card">
+  <div class="section-title">
+    <h2>Сценарий / кейс</h2>
+    <span class="small" id="scenario-meta"></span>
+  </div>
+  <div class="progress" id="scenario-progress"></div>
+  <h3 id="scenario-title"></h3>
+  <p id="scenario-text"></p>
+  <div id="scenario-options"></div>
+  <button class="btn btn-primary" onclick="applyScenario()">Выбрать вариант</button>
+  <button class="btn" onclick="nextScenario()">Следующий кейс</button>
+  <div class="result" id="scenario-result"></div>
+  <p class="small" id="scenario-explanation"></p>
+</div>
+
+<div class="card" id="vesting-card">
+  <div class="section-title">
+    <h2>Мини‑симулятор: вестинг и разводнение</h2>
+    <span class="small">Типичные механики в венчурных сделках.[web:16][web:17][web:20]</span>
+  </div>
+  <p class="small">
+    Вестинг — доля начисляется постепенно, cliff — период без начислений, разводнение — уменьшение долей после привлечения капитала.[web:16][web:17][web:20]
+  </p>
+  <div class="flex">
+    <div class="flex-col">
+      <label>Доля фаундера при запуске (%)</label><br>
+      <input type="number" id="founder-equity" value="50" min="1" max="100">
+    </div>
+    <div class="flex-col">
+      <label>Пул опционов (%)</label><br>
+      <input type="number" id="option-pool" value="10" min="0" max="40">
+    </div>
+    <div class="flex-col">
+      <label>Срок вестинга (лет)</label><br>
+      <input type="number" id="vesting-years" value="4" min="1" max="6">
+    </div>
+    <div class="flex-col">
+      <label>Cliff (лет)</label><br>
+      <input type="number" id="cliff" value="1" min="0" max="2" step="0.5">
+    </div>
+  </div>
+
+  <div class="flex" style="margin-top: 10px;">
+    <div class="flex-col">
+      <label>Прошло лет</label><br>
+      <input type="range" id="years-passed" value="0" min="0" max="4" step="0.5" oninput="updateYearsLabel()">
+      <span id="years-label" class="badge">0 лет</span>
+    </div>
+    <div class="flex-col">
+      <label>Раунд: разводнение (%)</label><br>
+      <input type="number" id="dilution" value="20" min="0" max="80">
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="calculateVesting()">Посчитать</button>
+  <div class="result" id="vesting-result"></div>
+  <p class="small" id="vesting-explanation"></p>
+</div>
+
+<script>
+// ---------- ДАННЫЕ: ТЕМЫ (ТЕОРИЯ) ----------
+// Содержимое опирается на стандартные блоки MBA по финансам, экономике, корп.финансам и инвестициям.[web:11][web:12][web:13][web:15][web:18]
+
+const topics = [
+  // LEVEL 1 — БАЗОВАЯ ЭКОНОМИКА И БИЗНЕС
+  {
+    level: 1,
+    title: "Выручка, прибыль, маржа — базовая логика",
+    tags: ["финансы", "основы"],
+    text:
+      "Выручка — это все деньги, которые бизнес получает от клиентов за товары или услуги за период.[web:11][web:12] " +
+      "Прибыль — это то, что остаётся после вычета всех расходов: аренда, зарплаты, сырьё, налоги и т.д.[web:11][web:12] " +
+      "Маржа показывает, какой процент выручки превращается в прибыль: высокая маржа даёт запас прочности на кризисы и скидки.[web:11][web:12]",
+    source: "Опора на базовые темы MBA‑финансов: отчёт о прибылях и убытках, маржа, прибыль.[web:11][web:12]"
+  },
+  {
+    level: 1,
+    title: "Фиксированные и переменные расходы",
+    tags: ["издержки", "операции"],
+    text:
+      "Фиксированные расходы почти не меняются при росте или падении объёма продаж: аренда офиса, оклад ядра команды, базовые сервисы.[web:11] " +
+      "Переменные расходы растут вместе с продажами: сырьё, упаковка, комиссия маркетплейса, логистика за штуку товара.[web:11] " +
+      "Понимание структуры расходов помогает считать точку безубыточности и оценивать масштабируемость.[web:11][web:13]",
+    source: "Стандартный блок cost accounting и анализа затрат в курсах MBA.[web:11]"
+  },
+  {
+    level: 1,
+    title: "Спрос, предложение и цена",
+    tags: ["микроэкономика"],
+    text:
+      "Спрос показывает, сколько товара люди готовы купить при разных ценах; предложение — сколько продавцы готовы произвести и продать.[web:13] " +
+      "Цена формируется там, где пересекаются спрос и предложение: если спрос растёт при фиксированном предложении, цена обычно повышается.[web:13] " +
+      "Эластичность спроса отражает, насколько сильно покупатели реагируют на изменение цены (ценовой чувствительности).[web:13]",
+    source: "Базовый блок микроэкономики для MBA: спрос, предложение, эластичность.[web:13]"
+  },
+  {
+    level: 1,
+    title: "Микро и макроэкономика простыми словами",
+    tags: ["экономика"],
+    text:
+      "Микроэкономика смотрит на отдельные фирмы и домохозяйства: ценообразование, конкуренция, поведение потребителей.[web:11][web:13] " +
+      "Макроэкономика изучает экономику целой страны: ВВП, инфляция, безработица, денежно‑кредитная политика.[web:11][web:13] " +
+      "Менеджеру важно понимать связь: решения бизнеса зависят от общей экономической среды.[web:11][web:13]",
+    source: "Раздел micro / macroeconomics в базовом ядре программ MBA.[web:11][web:13]"
+  },
+
+  // LEVEL 2 — ФИНАНСЫ И ИНВЕСТИЦИИ
+  {
+    level: 2,
+    title: "Принцип стоимости денег во времени",
+    tags: ["финансы", "инвестиции"],
+    text:
+      "«Деньги сегодня дороже, чем те же деньги завтра» — потому что их можно вложить и заработать доход, плюс есть инфляция и риск.[web:13] " +
+      "Этот принцип стоимости денег во времени лежит в основе расчёта процентных ставок, NPV и оценки проектов.[web:13] " +
+      "Даже простое сравнение: вложить сейчас или позже — это всегда про альтернативную доходность и риск.[web:13]",
+    source: "Блок time value of money в курсах по финансам.[web:13]"
+  },
+  {
+    level: 2,
+    title: "Три ключевых отчёта: P&L, баланс, cash flow",
+    tags: ["отчётность"],
+    text:
+      "Отчёт о прибылях и убытках (P&L) показывает выручку, расходы и прибыль за период.[web:12][web:13] " +
+      "Баланс показывает, чем владеет компания и за счёт каких источников это профинансировано: активы, обязательства и капитал.[web:12] " +
+      "Отчёт о движении денежных средств показывает реальные потоки денег: иногда прибыль есть, а кеша нет.[web:12][web:13]",
+    source: "Классический набор финансовой отчётности в программах MBA по финансам.[web:12][web:13]"
+  },
+  {
+    level: 2,
+    title: "Риск и доходность инвестиций",
+    tags: ["риск", "инвестиции"],
+    text:
+      "Любая инвестиция связана с риском: чем выше потенциальная доходность, тем выше обычно и возможные потери.[web:13][web:15] " +
+      "Инвестор оценивает не только ожидаемую доходность, но и волатильность и вероятность неблагоприятных исходов.[web:13][web:15] " +
+      "Сбалансировать риск и доходность помогает диверсификация: портфель из разных активов снижает влияние одного провала.[web:13][web:15]",
+    source: "Базовый блок risk & return и портфельного подхода в финансах.[web:13][web:15]"
+  },
+  {
+    level: 2,
+    title: "Основы портфельного мышления",
+    tags: ["портфель", "инвестиции"],
+    text:
+      "Портфель — это набор разных активов: акции, облигации, кеш, альтернативные инструменты.[web:15] " +
+      "Цель портфеля — не максимизировать доходность одной инвестиции, а оптимизировать соотношение риск/доходность всего набора.[web:13][web:15] " +
+      "Даже если один актив падает, другие могут компенсировать убытки, если они мало коррелированы друг с другом.[web:13][web:15]",
+    source: "Темы portfolio management и investments в специализации MBA по финансам.[web:15]"
+  },
+
+  // LEVEL 3 — ВЕНЧУР И СТАРТАПЫ
+  {
+    level: 3,
+    title: "Что делает венчурный фонд",
+    tags: ["венчур", "инвестиции"],
+    text:
+      "Венчурный фонд привлекает капитал от ограниченных партнёров (LP) и вкладывает его в стартапы с высоким потенциалом роста.[web:16][web:19] " +
+      "Фонд ищет сделки, проводит анализ (due diligence), инвестирует в обмен на долю и помогает портфельным компаниям.[web:16][web:19] " +
+      "Цель — получить крупные выходы (exits) в нескольких проектах, чтобы перекрыть множество неудачных инвестиций.[web:16][web:19]",
+    source: "Описания структуры и задач венчурных фондов и ролей инвестора.[web:16][web:19]"
+  },
+  {
+    level: 3,
+    title: "Стадии инвестиций: pre‑seed, seed, Series A…",
+    tags: ["раунды", "рост"],
+    text:
+      "На pre‑seed и seed инвесторы помогают проверить идею и найти product‑market fit на очень ранней стадии.[web:19] " +
+      "На Series A/B компании уже показывают выручку и рост, деньги идут на масштабирование продукт‑маркетинга и команды.[web:19] " +
+      "Чем позднее стадия, тем обычно выше чек и ниже риск, но и потенциал мультипликатора ниже.[web:19]",
+    source: "Описание стадий венчурных инвестиций и фокусов фондов.[web:19]"
+  },
+  {
+    level: 3,
+    title: "Cap table, вестинг и опционный пул",
+    tags: ["каптаблица", "фаундеры"],
+    text:
+      "Cap table показывает, кому и какой процент компании принадлежит: фаундеры, сотрудники, инвесторы, опционный пул.[web:16] " +
+      "Вестинг значит, что доля фаундера и сотрудников начисляется постепенно; cliff задаёт период, до которого доля не закрепляется.[web:16] " +
+      "Опционный пул — резерв доли для сотрудников; его создание и расширение разводняет всех существующих акционеров.[web:16]",
+    source: "Практики структурирования долей и вестинга в венчурных сделках.[web:16]"
+  },
+  {
+    level: 3,
+    title: "Разводнение при новых раундах",
+    tags: ["разводнение", "раунды"],
+    text:
+      "Когда компания привлекает новый капитал, выпускаются дополнительные доли, и доля существующих акционеров уменьшается в процентах.[web:16] " +
+      "Важно смотреть не только на процент, но и на абсолютную стоимость доли: меньший процент в гораздо более дорогой компании может быть выгоднее.[web:16] " +
+      "Фаундеры и инвесторы заранее моделируют cap table на несколько раундов вперёд.[web:16]",
+    source: "Базовая механика equity dilution в венчурных сделках.[web:16]"
+  },
+
+  // LEVEL 4 — СТРАТЕГИЯ И UNIT‑ЭКОНОМИКА
+  {
+    level: 4,
+    title: "Unit‑экономика: CAC, LTV и окупаемость",
+    tags: ["unit‑экономика"],
+    text:
+      "CAC — стоимость привлечения одного клиента: маркетинг + продажи, поделённые на количество новых клиентов за период.[web:17] " +
+      "LTV — доход от клиента за всё время жизни: для подписки часто берут выручку на аккаунт × маржу / churn.[web:17] " +
+      "Сильная юнит‑экономика обычно значит LTV/CAC ≥ 3:1 и разумный срок окупаемости маркетинга.[web:17][web:20]",
+    source: "Материалы по расчёту unit economics (CAC, LTV, LTV/CAC).[web:17][web:20]"
+  },
+  {
+    level: 4,
+    title: "Когда рост опасен",
+    tags: ["стратегия", "рост"],
+    text:
+      "Если на одного клиента компания стабильно теряет деньги (отрицательная unit‑экономика), масштабирование только увеличивает убыток.[web:17][web:20] " +
+      "Рост может иметь смысл, если компания инвестирует в долю рынка и есть ясный путь к улучшению юнит‑экономики.[web:17][web:20] " +
+      "Инвесторы смотрят, как быстро проект может выйти на положительную маржу на юните и вернуть вложенные деньги.[web:17][web:20]",
+    source: "Применение unit‑экономики в стратегических решениях о росте.[web:17][web:20]"
+  },
+  {
+    level: 4,
+    title: "Бизнес‑модели и источники выручки",
+    tags: ["стратегия"],
+    text:
+      "Типичные модели: разовая продажа, подписка (SaaS), маркетплейс с комиссией, рекламная модель, транзакционные комиссии.[web:15][web:19] " +
+      "Бизнес часто комбинирует несколько источников выручки, чтобы снизить риск и повысить монетизацию аудитории.[web:15][web:19] " +
+      "Выбор модели влияет на cash flow, маржу, скорость масштабирования и требования к капиталу.[web:15][web:19]",
+    source: "Курсы по корпоративным финансам и стратегиям монетизации.[web:15][web:19]"
+  },
+  {
+    level: 4,
+    title: "Стратегическое мышление при неопределённости",
+    tags: ["стратегия", "принятие решений"],
+    text:
+      "В реальности решения принимаются при неполной информации: менеджер оценивает сценарии, вероятности и последствия.[web:19] " +
+      "Важны не только цифры, но и качественная оценка команды, рынка, конкурентов, регуляторных рисков.[web:19] " +
+      "Мышление в сценариях помогает готовить план B/C и уменьшать downside при сохранении upside.[web:19]",
+    source: "Материалы по стратегическому мышлению и работе с риск/возврат.[web:19]"
+  }
+];
+
+// ---------- ДАННЫЕ: ВОПРОСЫ ----------
+// Вопросы + объяснения привязаны к темам выше и ключевым MBA‑концепциям.[web:11][web:12][web:13][web:15][web:17][web:20]
+
+const questions = [
+  // LEVEL 1
+  {
+    level: 1,
+    question: "Что лучше всего описывает понятие «маржа» в бизнесе?",
+    options: [
+      "Сумма денег на банковском счету компании.",
+      "Разница между выручкой и себестоимостью в рублях.",
+      "Процент прибыли от выручки: сколько денег остаётся после расходов.",
+      "Сумма всех расходов компании."
+    ],
+    correctIndex: 2,
+    explanation:
+      "Маржа показывает долю выручки, которая остаётся после расходов; высокий уровень маржи даёт бизнесу запас прочности.[web:11][web:12]"
+  },
+  {
+    level: 1,
+    question: "Какой расход чаще всего относится к фиксированным?",
+    options: [
+      "Себестоимость сырья на единицу товара.",
+      "Комиссия маркетплейса за каждую продажу.",
+      "Почасовая оплата фрилансеров за заказ.",
+      "Аренда офиса на год."
+    ],
+    correctIndex: 3,
+    explanation:
+      "Аренда офиса обычно не зависит от количества проданных единиц продукта, это типичный фиксированный расход.[web:11]"
+  },
+  {
+    level: 1,
+    question: "Какое утверждение о микро- и макроэкономике верно?",
+    options: [
+      "Микроэкономика изучает только государственный сектор, макроэкономика — только частный бизнес.",
+      "Микроэкономика фокусируется на отдельных фирмах и потребителях, макроэкономика — на экономике страны в целом.",
+      "Микроэкономика и макроэкономика — полностью независимые дисциплины.",
+      "Макроэкономика не интересует менеджеров бизнеса."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Микроэкономика — уровень отдельных фирм и домохозяйств, макроэкономика — уровень экономики страны и глобальных показателей.[web:11][web:13]"
+  },
+  {
+    level: 1,
+    question: "Что такое эластичность спроса по цене?",
+    options: [
+      "Изменение предложения при росте цены.",
+      "Насколько сильно спрос реагирует на изменение цены.",
+      "Скорость роста выручки компании.",
+      "Уровень инфляции в экономике."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Эластичность спроса показывает чувствительность покупателей к изменению цены: высокий показатель значит, что спрос сильно меняется при изменении цены.[web:13]"
+  },
+
+  // LEVEL 2
+  {
+    level: 2,
+    question: "Почему одна и та же сумма денег сегодня обычно ценнее, чем через год?",
+    options: [
+      "Завтра деньги будут запрещены.",
+      "Сегодня можно вложить деньги и получить доход, плюс есть инфляция и риск.[web:13]",
+      "Банки принимают только «свежие» купюры.",
+      "Это верно только для криптовалют."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Принцип стоимости денег во времени: деньги сегодня можно инвестировать и получить доход, а будущее ценит риск и инфляцию.[web:13]"
+  },
+  {
+    level: 2,
+    question: "Какой отчёт показывает, как изменялся реальный денежный остаток компании?",
+    options: [
+      "Отчёт о прибылях и убытках (P&L).",
+      "Баланс.",
+      "Отчёт о движении денежных средств (cash flow).",
+      "Прогноз продаж."
+    ],
+    correctIndex: 2,
+    explanation:
+      "Отчёт о движении денежных средств показывает реальные притоки и оттоки денег, а не только начисленную прибыль.[web:12][web:13]"
+  },
+  {
+    level: 2,
+    question: "Что обычно происходит с риском, когда инвестор широко диверсифицирует портфель?",
+    options: [
+      "Риск каждой отдельной инвестиции исчезает.",
+      "Риск всего портфеля за счёт несинхронности активов снижается.",
+      "Риск увеличивается из‑за большого количества активов.",
+      "Риск становится одинаковым для всех активов."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Диверсификация снижает совокупный риск портфеля, потому что разные активы не всегда двигаются в одну сторону.[web:13][web:15]"
+  },
+  {
+    level: 2,
+    question: "Какой из примеров относится к «высокий риск — высокая ожидаемая доходность»?",
+    options: [
+      "Гособлигации крупной развитой страны.",
+      "Краткосрочный депозит в крупном банке.",
+      "Инвестиция в ранний стартап без выручки.",
+      "Покупка валюты для поездки."
+    ],
+    correctIndex: 2,
+    explanation:
+      "Инвестиции в ранние стартапы несут высокий риск провала, но в случае успеха дают очень высокую потенциальную доходность.[web:13][web:15]"
+  },
+
+  // LEVEL 3
+  {
+    level: 3,
+    question: "Кто такие LP в венчурном фонде?",
+    options: [
+      "Сотрудники фонда на зарплате.",
+      "Ранние сотрудники стартапа.",
+      "Ограниченные партнёры, вкладывающие капитал в фонд и не управляющие им ежедневно.",
+      "Только государственные инвесторы."
+    ],
+    correctIndex: 2,
+    explanation:
+      "LP (limited partners) предоставляют капитал фонду, но не управляют повседневными инвестиционными решениями.[web:16]"
+  },
+  {
+    level: 3,
+    question: "Чем обычно отличаются seed и Series A?",
+    options: [
+      "На seed компании уже публичны, на Series A — только идея.",
+      "Seed — очень ранний этап поиска product‑market fit, Series A — масштабирование на основе первых результатов.[web:19]",
+      "Seed всегда больше по сумме, чем Series A.",
+      "Series A — только для некоммерческих проектов."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Seed‑раунд помогает проверить модель и найти product‑market fit, Series A поддерживает масштабирование уже валидированной модели.[web:19]"
+  },
+  {
+    level: 3,
+    question: "Для чего вводят вестинг доли фаундера?",
+    options: [
+      "Чтобы фаундер получил всё сразу и мог уйти.",
+      "Чтобы доля начислялась постепенно и мотивировала фаундера оставаться в проекте.[web:16]",
+      "Чтобы увеличить налоговую нагрузку.",
+      "Чтобы защитить только инвесторов, но не команду."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Вестинг синхронизирует долгосрочную мотивацию фаундеров и инвесторов: доля растёт по мере вклада и времени в проекте.[web:16]"
+  },
+  {
+    level: 3,
+    question: "Что происходит с долей существующих акционеров при выпуске новых акций для раунда?",
+    options: [
+      "Их процент всегда остаётся тем же.",
+      "Их доля в процентах уменьшается, если они не участвуют в раунде.",
+      "Их доля увеличивается автоматически.",
+      "На cap table это никак не влияет."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Выпуск новых акций увеличивает общее число долей, поэтому доля существующих акционеров в процентах уменьшается, если они не выкупают часть новых акций.[web:16]"
+  },
+
+  // LEVEL 4
+  {
+    level: 4,
+    question: "Как корректно описать CAC (Customer Acquisition Cost)?",
+    options: [
+      "Сумма всех расходов компании за год.",
+      "Маржа на одного клиента.",
+      "Средний доход с одного клиента за весь срок жизни.",
+      "Общие маркетинговые и продажные расходы, делённые на число новых клиентов за период.[web:17]"
+    ],
+    correctIndex: 3,
+    explanation:
+      "CAC отражает, сколько в среднем стоит получение одного нового клиента с учётом маркетинга и продаж.[web:17]"
+  },
+  {
+    level: 4,
+    question: "Что обычно считается признаком здоровой unit‑экономики по LTV/CAC?",
+    options: [
+      "LTV/CAC около 1:1 или ниже.",
+      "LTV/CAC заметно выше 3:1.",
+      "LTV/CAC меньше 0,5:1.",
+      "На этот показатель не смотрят."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Часто ориентируются на LTV/CAC ≥ 3:1 как на сигнал эффективной модели; при сильно более высоком значении можно недоинвестировать в рост.[web:17][web:20]"
+  },
+  {
+    level: 4,
+    question: "Что значит отрицательная unit‑экономика?",
+    options: [
+      "Компания зарабатывает на каждой единице продукта.",
+      "Компания теряет деньги на каждой единице продукта/клиента.[web:17]",
+      "Компания не имеет расходов.",
+      "Компания не использует маркетинг."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Отрицательная unit‑экономика означает, что в среднем на одном клиенте или продукте компания теряет деньги; масштабирование без изменений увеличивает убытки.[web:17]"
+  },
+  {
+    level: 4,
+    question: "Как бизнес‑модель влияет на cash flow?",
+    options: [
+      "Не влияет, если есть выручка.",
+      "Подписка чаще даёт предсказуемые периодические платежи, разовая продажа — нерегулярные крупные поступления.[web:15]",
+      "Только реклама создаёт cash flow.",
+      "С этим работает только бухгалтер."
+    ],
+    correctIndex: 1,
+    explanation:
+      "Модель выручки (подписка, разовые продажи, комиссии) определяет частоту и предсказуемость денежных потоков и потребность в капитале.[web:15]"
+  }
+];
+
+// ---------- ДАННЫЕ: СЦЕНАРИИ / КЕЙСЫ ----------
+
+const scenarios = [
+  // LEVEL 1
+  {
+    level: 1,
+    title: "Поднять цену или удержать долю рынка?",
+    meta: "Спрос, маржа, эластичность.[web:11][web:13]",
+    text:
+      "У тебя кофейня. Себестоимость чашки кофе выросла с 80 ₽ до 100 ₽. Ты продаёшь по 150 ₽, конкуренты подняли цены до 170–180 ₽.[web:11][web:13] " +
+      "Клиенты чувствительны к цене, но любят твой продукт.",
+    options: [
+      {
+        label: "Оставить цену 150 ₽, снизив маржу.",
+        outcome:
+          "Маржа в рублях упадёт, но ты можешь сохранить часть клиентов, которые не готовы к росту цены.[web:11][web:13]",
+        effect: "margin_down"
+      },
+      {
+        label: "Поднять цену до 170 ₽, как у конкурентов.",
+        outcome:
+          "Маржа в рублях вырастет, но часть клиентов уйдёт; решение зависит от уникальности продукта и эластичности спроса.[web:11][web:13]",
+        effect: "price_up"
+      }
+    ],
+    explanation:
+      "Важен баланс между маржой и объёмом: при высокой эластичности спроса сильный рост цены может снизить общую прибыль.[web:11][web:13]"
+  },
+  {
+    level: 1,
+    title: "Сократить фиксированные или переменные расходы?",
+    meta: "Структура затрат и операционная эффективность.[web:11]",
+    text:
+      "Цифровой сервис с подпиской: у тебя высокая аренда офиса и оклады (фиксированные расходы) и значительная комиссия платёжного провайдера (переменные расходы).[web:11] " +
+      "Выручка растёт, но прибыль около нуля.",
+    options: [
+      {
+        label: "Снизить аренду и часть фиксированных расходов.",
+        outcome:
+          "Точка безубыточности снижается, бизнес меньше зависит от объёма продаж.[web:11]",
+        effect: "fixed_down"
+      },
+      {
+        label: "Сторговаться по комиссии или сменить провайдера.",
+        outcome:
+          "Переменные расходы на клиента снижаются, растёт маржа на юните; особенно важно при масштабировании.[web:11]",
+        effect: "variable_down"
+      }
+    ],
+    explanation:
+      "Играть можно и с фиксированными, и с переменными расходами: для масштабируемых моделей особенно критична эффективность на юните.[web:11]"
+  },
+
+  // LEVEL 2
+  {
+    level: 2,
+    title: "Куда вложить свободный кеш компании?",
+    meta: "Риск и доходность, ликвидность.[web:13][web:15]",
+    text:
+      "У компании накопился запас денег, который не нужен ближайшие 12 месяцев. Выбор: короткие гособлигации с низким риском или высокодоходные рискованные инструменты.[web:13][web:15]",
+    options: [
+      {
+        label: "Держать всё в гособлигациях.",
+        outcome:
+          "Невысокая доходность, но высокая надёжность и предсказуемость cash flow — подходит, если главное сохранить капитал.[web:13][web:15]",
+        effect: "low_risk"
+      },
+      {
+        label: "Отдать значительную часть в агрессивные инструменты.",
+        outcome:
+          "Потенциально более высокая доходность, но риск просадки, которая может повлиять на возможности компании инвестировать в развитие.[web:13][web:15]",
+        effect: "high_risk"
+      }
+    ],
+    explanation:
+      "Корпоративные финансы обычно предпочитают более предсказуемые и ликвидные инструменты для операционного кеша, учитывая риск и стратегические планы.[web:13][web:15]"
+  },
+  {
+    level: 2,
+    title: "Инвестировать в проект с отложенной отдачей?",
+    meta: "Стоимость денег во времени, NPV на интуитивном уровне.[web:13]",
+    text:
+      "Менеджер рассматривает два проекта: A даёт умеренную выгоду уже в первый год, B обещает большую выгоду через 5 лет, но с риском и без промежуточных потоков.[web:13] " +
+      "Капитал ограничен.",
+    options: [
+      {
+        label: "Выбрать проект A с быстрым, но меньшим эффектом.",
+        outcome:
+          "Повышает устойчивость в ближайшее время, оставляя опцию реинвестировать позже; по сути ставка на более высокую ликвидность.[web:13]",
+        effect: "short_term"
+      },
+      {
+        label: "Поставить на проект B с эффектом через 5 лет.",
+        outcome:
+          "Потенциально высокий NPV, но высокий риск; решение зависит от устойчивости базового бизнеса и доступа к капиталу.[web:13]",
+        effect: "long_term"
+      }
+    ],
+    explanation:
+      "Выбор между быстрым и отложенным эффектом — это про стоимость денег во времени, риск и стратегию компании.[web:13]"
+  },
+
+  // LEVEL 3
+  {
+    level: 3,
+    title: "Условия вестинга от инвестора",
+    meta: "Вестинг фаундеров, стандарт рынка.[web:16]",
+    text:
+      "Фонд предлагает seed‑раунд при условии 4‑летнего вестинга с 1‑годичным cliff для всех фаундеров.[web:16] " +
+      "Один из фаундеров хочет всю долю сразу и против вестинга.",
+    options: [
+      {
+        label: "Согласиться на вестинг и cliff.",
+        outcome:
+          "Условия соответствуют рыночной практике; это защищает инвесторов и фаундеров от ситуации, когда кто‑то уйдёт слишком рано.[web:16]",
+        effect: "market_standard"
+      },
+      {
+        label: "Отказаться от вестинга и настаивать на полной доле.",
+        outcome:
+          "Фонд, скорее всего, откажется или ухудшит условия: отсутствие вестинга воспринимается как высокий риск.[web:16]",
+        effect: "deal_risk"
+      }
+    ],
+    explanation:
+      "Вестинг фаундеров — стандартный инструмент выравнивания интересов и снижения риска для инвесторов.[web:16]"
+  },
+  {
+    level: 3,
+    title: "Создать ли опционный пул перед раундом?",
+    meta: "Опционный пул и разводнение.[web:16]",
+    text:
+      "Инвестор соглашается на оценку, но просит создать 10% опционный пул до раунда. Это разводняет фаундеров и существующих акционеров.[web:16]",
+    options: [
+      {
+        label: "Согласиться на опционный пул до раунда.",
+        outcome:
+          "Доля фаундеров уменьшится, но компания сможет привлечь сильных сотрудников за счёт опционов; это типичная практика.[web:16]",
+        effect: "pool_created"
+      },
+      {
+        label: "Отказаться от пула и держаться за процент.",
+        outcome:
+          "Можно сохранить процент сейчас, но будет сложнее мотивировать команду; инвестор может пересмотреть условия.[web:16]",
+        effect: "no_pool"
+      }
+    ],
+    explanation:
+      "Пул опционов почти всегда ожидается венчурными инвесторами; важно сбалансировать мотивацию команды и долю фаундеров.[web:16]"
+  },
+
+  // LEVEL 4
+  {
+    level: 4,
+    title: "Рост с отрицательной unit‑экономикой?",
+    meta: "CAC, LTV и решение о масштабировании.[web:17][web:20]",
+    text:
+      "Стартап тратит на привлечение клиента 100 у.е., а совокупный LTV клиента — 80 у.е. Модель ещё «сырая», но команда хочет агрессивно масштабироваться.[web:17]",
+    options: [
+      {
+        label: "Сначала улучшить продукт и экономику, потом масштабироваться.",
+        outcome:
+          "Логичный шаг: иначе рост увеличивает убыток; задача — поднять LTV и/или снизить CAC до положительной экономики.[web:17][web:20]",
+        effect: "fix_first"
+      },
+      {
+        label: "Масштабироваться сразу, надеясь на будущие улучшения.",
+        outcome:
+          "Высокий риск: при отрицательной экономике каждый новый клиент — минус; нужен очень сильный кейс, почему картина изменится.[web:17]",
+        effect: "scale_loss"
+      }
+    ],
+    explanation:
+      "Инвесторы обычно не любят масштабирование с устойчиво отрицательной unit‑экономикой без очень чёткого плана улучшения.[web:17][web:20]"
+  },
+  {
+    level: 4,
+    title: "Сегментация по LTV/CAC",
+    meta: "Разные сегменты — разная прибыльность.[web:17][web:20]",
+    text:
+      "У продукта два сегмента: А с LTV/CAC около 5:1 и B с LTV/CAC около 1,5:1. Бюджет маркетинга ограничен.[web:17][web:20]",
+    options: [
+      {
+        label: "Сфокусироваться на сегменте А.",
+        outcome:
+          "Высокий LTV/CAC даёт больше ценности на каждый вложенный рубль маркетинга; можно ускорить рост при меньшем риске.[web:17][web:20]",
+        effect: "segment_a"
+      },
+      {
+        label: "Продолжать равномерно инвестировать в оба сегмента.",
+        outcome:
+          "Ресурсы тратятся и на менее эффективный сегмент; есть причина так делать только при стратегических мотивах.[web:17][web:20]",
+        effect: "both_segments"
+      }
+    ],
+    explanation:
+      "Сегментация по unit‑экономике позволяет направлять инвестиции туда, где они дают лучший возврат.[web:17][web:20]"
+  }
+];
+
+// ---------- СОСТОЯНИЕ ----------
+
+let currentLevel = 1;
+let currentTopicIndex = 0;
+let currentQuestionIndex = 0;
+let currentScenarioIndex = 0;
+
+// ---------- ХЕЛПЕРЫ ----------
+
+function getTopicsForLevel(level) {
+  return topics.filter(t => t.level === level);
+}
+function getQuestionsForLevel(level) {
+  return questions.filter(q => q.level === level);
+}
+function getScenariosForLevel(level) {
+  return scenarios.filter(s => s.level === level);
+}
+
+// ---------- ТЕОРИЯ ----------
+
+function renderTheory() {
+  const ts = getTopicsForLevel(currentLevel);
+  const titleEl = document.getElementById("topic-title");
+  const textEl = document.getElementById("topic-text");
+  const sourceEl = document.getElementById("topic-source");
+  const progressEl = document.getElementById("topic-progress");
+  const metaEl = document.getElementById("topic-meta");
+
+  if (!ts.length) {
+    titleEl.textContent = "Для этого уровня пока нет теории.";
+    textEl.textContent = "Добавь новые темы в массив topics.";
+    sourceEl.textContent = "";
+    progressEl.textContent = "";
+    metaEl.textContent = "";
+    return;
+  }
+
+  if (currentTopicIndex >= ts.length) currentTopicIndex = 0;
+  if (currentTopicIndex < 0) currentTopicIndex = ts.length - 1;
+
+  const t = ts[currentTopicIndex];
+  titleEl.textContent = t.title;
+  textEl.textContent = t.text;
+  sourceEl.textContent = t.source || "";
+  progressEl.textContent = `Тема ${currentTopicIndex + 1} из ${ts.length}`;
+  metaEl.textContent = (t.tags || []).map(tag => "#" + tag).join(" ");
+}
+
+function nextTopic() {
+  const ts = getTopicsForLevel(currentLevel);
+  if (!ts.length) return;
+  currentTopicIndex = (currentTopicIndex + 1) % ts.length;
+  renderTheory();
+}
+function prevTopic() {
+  const ts = getTopicsForLevel(currentLevel);
+  if (!ts.length) return;
+  currentTopicIndex = (currentTopicIndex - 1 + ts.length) % ts.length;
+  renderTheory();
+}
+
+// ---------- QUIZ ----------
+
+function renderQuestion() {
+  const qs = getQuestionsForLevel(currentLevel);
+  const qEl = document.getElementById("quiz-question");
+  const optsEl = document.getElementById("quiz-options");
+  const resultEl = document.getElementById("quiz-result");
+  const explEl = document.getElementById("quiz-explanation");
+  const progressEl = document.getElementById("quiz-progress");
+  const metaEl = document.getElementById("quiz-meta");
+
+  if (!qs.length) {
+    qEl.textContent = "Для этого уровня нет вопросов.";
+    optsEl.innerHTML = "";
+    resultEl.textContent = "";
+    explEl.textContent = "Добавь вопросы в массив questions.";
+    progressEl.textContent = "";
+    metaEl.textContent = "";
+    return;
+  }
+
+  if (currentQuestionIndex >= qs.length) currentQuestionIndex = 0;
+  if (currentQuestionIndex < 0) currentQuestionIndex = qs.length - 1;
+
+  const q = qs[currentQuestionIndex];
+  qEl.textContent = q.question;
+  optsEl.innerHTML = "";
+  q.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerHTML = `
+      <label>
+        <input type="radio" name="quiz-option" value="${idx}">
+        ${opt}
+      </label>
+    `;
+    optsEl.appendChild(div);
+  });
+  resultEl.textContent = "";
+  explEl.textContent = "";
+  progressEl.textContent = `Вопрос ${currentQuestionIndex + 1} из ${qs.length}`;
+  metaEl.textContent = "";
+}
+
+function checkAnswer() {
+  const qs = getQuestionsForLevel(currentLevel);
+  if (!qs.length) return;
+  const q = qs[currentQuestionIndex];
+  const selected = document.querySelector('input[name="quiz-option"]:checked');
+  const resultEl = document.getElementById("quiz-result");
+  const explEl = document.getElementById("quiz-explanation");
+
+  if (!selected) {
+    resultEl.textContent = "Выбери вариант ответа.";
+    resultEl.className = "result incorrect";
+    explEl.textContent = "";
+    return;
+  }
+
+  const idx = parseInt(selected.value, 10);
+  if (idx === q.correctIndex) {
+    resultEl.textContent = "Верно ✅";
+    resultEl.className = "result correct";
+  } else {
+    resultEl.textContent = "Не совсем. Посмотри объяснение ниже.";
+    resultEl.className = "result incorrect";
+  }
+  explEl.textContent = q.explanation;
+}
+
+function nextQuestion() {
+  const qs = getQuestionsForLevel(currentLevel);
+  if (!qs.length) return;
+  currentQuestionIndex = (currentQuestionIndex + 1) % qs.length;
+  renderQuestion();
+}
+
+// ---------- СЦЕНАРИИ / КЕЙСЫ ----------
+
+function renderScenario() {
+  const ss = getScenariosForLevel(currentLevel);
+  const titleEl = document.getElementById("scenario-title");
+  const textEl = document.getElementById("scenario-text");
+  const optsEl = document.getElementById("scenario-options");
+  const resultEl = document.getElementById("scenario-result");
+  const explEl = document.getElementById("scenario-explanation");
+  const progressEl = document.getElementById("scenario-progress");
+  const metaEl = document.getElementById("scenario-meta");
+
+  if (!ss.length) {
+    titleEl.textContent = "Для этого уровня нет кейсов.";
+    textEl.textContent = "Добавь сценарии в массив scenarios.";
+    optsEl.innerHTML = "";
+    resultEl.textContent = "";
+    explEl.textContent = "";
+    progressEl.textContent = "";
+    metaEl.textContent = "";
+    return;
+  }
+
+  if (currentScenarioIndex >= ss.length) currentScenarioIndex = 0;
+  if (currentScenarioIndex < 0) currentScenarioIndex = ss.length - 1;
+
+  const s = ss[currentScenarioIndex];
+  titleEl.textContent = s.title;
+  textEl.textContent = s.text;
+  optsEl.innerHTML = "";
+  s.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerHTML = `
+      <label>
+        <input type="radio" name="scenario-option" value="${idx}">
+        ${opt.label}
+      </label>
+    `;
+    optsEl.appendChild(div);
+  });
+  resultEl.textContent = "";
+  explEl.textContent = "";
+  progressEl.textContent = `Кейс ${currentScenarioIndex + 1} из ${ss.length}`;
+  metaEl.textContent = s.meta || "";
+}
+
+function applyScenario() {
+  const ss = getScenariosForLevel(currentLevel);
+  if (!ss.length) return;
+  const s = ss[currentScenarioIndex];
+  const selected = document.querySelector('input[name="scenario-option"]:checked');
+  const resultEl = document.getElementById("scenario-result");
+  const explEl = document.getElementById("scenario-explanation");
+
+  if (!selected) {
+    resultEl.textContent = "Выбери вариант решения.";
+    resultEl.className = "result incorrect";
+    explEl.textContent = "";
+    return;
+  }
+
+  const idx = parseInt(selected.value, 10);
+  const chosen = s.options[idx];
+  resultEl.textContent = chosen.outcome;
+  resultEl.className = "result";
+  explEl.textContent = s.explanation;
+}
+
+function nextScenario() {
+  const ss = getScenariosForLevel(currentLevel);
+  if (!ss.length) return;
+  currentScenarioIndex = (currentScenarioIndex + 1) % ss.length;
+  renderScenario();
+}
+
+// ---------- СИМУЛЯТОР ВЕСТИНГА ----------
+
+function updateYearsLabel() {
+  const years = parseFloat(document.getElementById("years-passed").value);
+  document.getElementById("years-label").textContent = years + " лет";
+}
+
+function calculateVesting() {
+  const founderEquity = parseFloat(document.getElementById("founder-equity").value) || 0;
+  const vestingYears = parseFloat(document.getElementById("vesting-years").value) || 4;
+  const cliff = parseFloat(document.getElementById("cliff").value) || 0;
+  const yearsPassed = parseFloat(document.getElementById("years-passed").value) || 0;
+  const dilution = parseFloat(document.getElementById("dilution").value) || 0;
+
+  const resultEl = document.getElementById("vesting-result");
+  const explEl = document.getElementById("vesting-explanation");
+
+  let vestedFraction = 0;
+  if (yearsPassed < cliff) {
+    vestedFraction = 0;
+  } else if (yearsPassed >= vestingYears) {
+    vestedFraction = 1;
+  } else {
+    const effectiveYears = yearsPassed - cliff;
+    const remainingYears = Math.max(vestingYears - cliff, 0.0001);
+    vestedFraction = Math.min(effectiveYears / remainingYears, 1);
+  }
+
+  const vestedEquityBeforeDilution = founderEquity * vestedFraction;
+  const remainingFractionAfterDilution = (100 - dilution) / 100;
+  const vestedEquityAfterDilution = vestedEquityBeforeDilution * remainingFractionAfterDilution;
+
+  resultEl.textContent =
+    "Завестилось до раунда: ~" + vestedEquityBeforeDilution.toFixed(2) +
+    "%; после раунда с разводнением: ~" + vestedEquityAfterDilution.toFixed(2) + "%.";
+
+  explEl.textContent =
+    "Cliff означает, что до его окончания доля не закрепляется; затем она растёт линейно до конца периода вестинга.[web:16] " +
+    "Разводнение раунда уменьшает уже завестившуюся долю пропорционально росту общего числа акций.[web:16]";
+}
+
+// ---------- УРОВНИ ----------
+
+function setLevel(level) {
+  currentLevel = level;
+  currentTopicIndex = 0;
+  currentQuestionIndex = 0;
+  currentScenarioIndex = 0;
+  document.getElementById("level").value = String(level);
+  document.getElementById("level-label").textContent = "Секция " + level;
+  renderTheory();
+  renderQuestion();
+  renderScenario();
+}
+
+function prevLevel() {
+  currentLevel = currentLevel <= 1 ? 4 : currentLevel - 1;
+  setLevel(currentLevel);
+}
+function nextLevel() {
+  currentLevel = currentLevel >= 4 ? 1 : currentLevel + 1;
+  setLevel(currentLevel);
+}
+
+document.getElementById("level").addEventListener("change", (e) => {
+  setLevel(parseInt(e.target.value, 10));
+});
+
+// ---------- ИНИЦИАЛИЗАЦИЯ ----------
+
+setLevel(1);
+updateYearsLabel();
+</script>
+
+</body>
+</html>
